@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "tele-bot-python-junior"
+version = "0.1.0"
+description = ""
+authors = ["Ivan Timofeev <timofeevis89@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+python-dotenv = "^1.0.1"
+pytelegrambotapi = "^4.16.1"
+pillow = "^10.2.0"
+sqlalchemy = "^2.0.29"
+psycopg2-binary = "^2.9.9"
+
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^7.0.0"
+isort = "^5.13.2"
+black = "^24.3.0"
+flake8-pyproject = "^1.2.3"
+mypy = "^1.9.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
