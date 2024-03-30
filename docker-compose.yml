@@ -1,0 +1,41 @@
+version: "2.24.0"
+
+volumes:
+    pgdata:
+    img:
+
+networks:
+    telebot_net:
+
+services:
+    postgresdb:
+        container_name: postgres_container
+        image: postgres:latest
+        restart: unless-stopped
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        networks:
+            - telebot_net
+        ports:
+            - 5432:5432
+        env_file:
+            - .env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres -d telebot"]
+            interval: 30s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+
+    telebot:
+        container_name: telebot_container
+        build: .
+        networks:
+            - telebot_net
+        env_file:
+            - .env
+        volumes:
+            - img:/img
+        depends_on:
+            - postgresdb
+

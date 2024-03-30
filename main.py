@@ -10,13 +10,17 @@ from sqlalchemy.sql import select
 from telebot import types
 from telebot.types import Message
 
-from models import ImageBase, session
+from models import ImageBase, create_tables, engine, session, table_exists
 
 load_dotenv()
-
 # Загружаем необходимые переменные окружения
 welcome_phrase = os.getenv("WELCOME_PHRASE")
 token = os.getenv("TOKEN")
+TABLE_NAME = os.getenv("TABLE_NAME")
+
+# Создаём таблицы
+if not table_exists(TABLE_NAME):
+    create_tables(engine)
 
 # Инициализация бота
 bot = telebot.TeleBot(token)
