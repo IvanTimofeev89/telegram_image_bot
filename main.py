@@ -14,6 +14,7 @@ from models import ImageBase, session
 
 load_dotenv()
 
+# Загружаем необходимые переменные окружения
 welcome_phrase = os.getenv('WELCOME_PHRASE')
 token = os.getenv('TOKEN')
 
@@ -25,7 +26,7 @@ with open('phrase_collection.txt', 'r', encoding='UTF-8') as file:
     phrase_collection = file.readlines()
 
 
-class UserImage():
+class UserImage:
 
     def __init__(self, message):
         self.id = message.photo[-1].file_id
@@ -43,18 +44,16 @@ class UserImage():
 
         image_draw.text(((image_width - text_width) / 2, image_height / 2), text=text, font=font, fill='white')
 
-        output_bytes = BytesIO()
-        image.save(output_bytes, format='JPEG')
-        output_bytes_data = output_bytes.getvalue()
-
-        return output_bytes_data
+        return image
 
     def save_image(self, image):
-        date_time = datetime.now().strftime('%Y-%m-%d_%H%M%S')
-        with open(f"img/{date_time}_{self.user_id}.jpg", "wb") as new_image:
-            new_image.write(image)
-        return new_image.name
+        file_path = f"img/{datetime.now().strftime('%Y-%m-%d_%H%M%S')}_{self.user_id}.jpg"
+        image.save(file_path)
+        return file_path
 
+
+    def file_exists(self, file):
+        return file.id and os.path.exists(file.image_path)
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -79,25 +78,28 @@ def handle_photo(message):
     user_image = UserImage(message)
 
     image_path = bot.get_file(user_image.id).file_path
-    downloaded_picture = bot.download_file(image_path)
+    downloaded_image = bot.download_file(image_path)
 
-    signed_image = user_image.sign_image(picture_bytes=downloaded_picture)
-    saved_image_name = user_image.save_image(image=signed_image)
+    signed_image = user_image.sign_image(picture_bytes=downloaded_image)
+    saved_image_path = user_image.save_image(image=signed_image)
 
     data = ImageBase(
         image_id=user_image.id,
-        image_path=saved_image_name
+        image_path=saved_image_path
     )
     session.add(data)
     session.commit()
 
-    db_id_record = data.id
+    if not user_image.file_exists(data):
+        bot.send_message(message.chat.id, "При сохранении файла произошла ошибка",
+                         reply_to_message_id=message.message_id)
+        return
 
-    with open(saved_image_name, 'rb') as photo:
+    with open(saved_image_path, 'rb') as photo:
         bot.send_photo(message.chat.id, photo=photo)
 
     markup = types.InlineKeyboardMarkup(row_width=1)
-    button_share = types.InlineKeyboardButton('Поделиться', callback_data=f'share_{db_id_record}')
+    button_share = types.InlineKeyboardButton('Поделиться', callback_data=f'share_{data.id}')
     markup.add(button_share)
 
     bot.send_message(message.chat.id, "Поделитесь новым изображением, если оно Вам понравилось!", reply_markup=markup)
@@ -110,9 +112,15 @@ def share_image(call):
     image_path = session.scalar(query)
 
     if image_path:
+
+        resend_id_chat = call.message.chat.id
+        if int(os.getenv("RESEND_ID_CHAT")):
+            resend_id_chat = os.getenv("RESEND_ID_CHAT")
+
         with open(image_path, 'rb') as photo:
-            bot.send_photo(call.message.chat.id, photo)
+            bot.send_photo(resend_id_chat, photo)
         bot.answer_callback_query(call.id)
+
     else:
         bot.answer_callback_query(call.id, text="Изображение не найдено")
 
