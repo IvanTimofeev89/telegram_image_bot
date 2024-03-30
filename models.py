@@ -1,11 +1,9 @@
-
 import os
 
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from dotenv import load_dotenv
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
-
 
 load_dotenv()
 
@@ -14,7 +12,7 @@ POSTGRES_USER = os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
 
-DSN = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/{POSTGRES_DB}'
+DSN = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/{POSTGRES_DB}"
 engine = sa.create_engine(url=DSN, echo=False)
 Session = sessionmaker(bind=engine)
 session = Session()

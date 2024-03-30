@@ -2,3 +2,4 @@
 .idea/
 __pycache__
 *.jpg
+.mypy_cache

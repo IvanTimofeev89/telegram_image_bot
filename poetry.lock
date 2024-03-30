@@ -749,6 +749,17 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
+name = "types-pillow"
+version = "10.2.0.20240324"
+description = "Typing stubs for Pillow"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-Pillow-10.2.0.20240324.tar.gz", hash = "sha256:e0108f0b30ea926a3a5d00f201cde627cde1574181b586eb36dd6be1e4ba09cf"},
+    {file = "types_Pillow-10.2.0.20240324-py3-none-any.whl", hash = "sha256:e0ac3b50ade911b2a238b6633cc6be9559a6f8bc54141db6ad13b70989fd3d99"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.10.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -779,4 +790,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "46cb29a06e7cd6135df4d7a7507a5955813837050b8870aaca89ae53945f3744"
+content-hash = "c39a36d3a0d05205378564203dd8efe939719f17227b38116029b3e27f0e0924"

@@ -12,6 +12,7 @@ pytelegrambotapi = "^4.16.1"
 pillow = "^10.2.0"
 sqlalchemy = "^2.0.29"
 psycopg2-binary = "^2.9.9"
+types-pillow = "^10.2.0.20240324"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -24,3 +25,42 @@ mypy = "^1.9.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+'''
+
+[tool.isort]
+profile = "black"
+
+[tool.flake8]
+max-line-length = 100
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    ".mypy_cache",
+]
+extend-ignore = "E203, E501"
+
+[tool.mypy]
+exclude = [".venv", "__pycache__", ".git"]
+disable_error_code = ["import-untyped"]
