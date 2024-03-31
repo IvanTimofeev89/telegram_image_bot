@@ -10,17 +10,13 @@ from sqlalchemy.sql import select
 from telebot import types
 from telebot.types import Message
 
-from models import ImageBase, create_tables, engine, session, table_exists
+from models import ImageBase, session
 
-load_dotenv()
 # Загружаем необходимые переменные окружения
+load_dotenv()
 welcome_phrase = os.getenv("WELCOME_PHRASE")
 token = os.getenv("TOKEN")
 TABLE_NAME = os.getenv("TABLE_NAME")
-
-# Создаём таблицы
-if not table_exists(TABLE_NAME):
-    create_tables(engine)
 
 # Инициализация бота
 bot = telebot.TeleBot(token)
@@ -31,12 +27,23 @@ with open("phrase_collection.txt", "r", encoding="UTF-8") as file:
 
 
 class UserImage:
+    """
+    Класс для загружаемых изображений
+    """
 
     def __init__(self, message: Message):
+        """
+        Записываем уникальный id изображения и id отправителя
+        в атрибуты экземпляра класса
+        """
         self.id = message.photo[-1].file_id
         self.user_id = message.from_user.id
 
     def sign_image(self, picture_bytes: bytes) -> Image.Image:
+        """
+        Нанесение текста на загруженное изображение с использованием Pillow.
+        Метод возвращает подписанный объект Image.
+        """
         image = Image.open(BytesIO(picture_bytes))
         image_draw = ImageDraw.Draw(image)
 
@@ -53,16 +60,27 @@ class UserImage:
         return image
 
     def save_image(self, image: Image.Image) -> str:
+        """
+        Метод сохраняет подписанный объект Image в БД, используя SQLAlchemy,
+        а также возвращает путь к сохраненному изображению
+        """
         file_path = f"img/{datetime.now().strftime('%Y-%m-%d_%H%M%S')}_{self.user_id}.jpg"
         image.save(file_path)
         return file_path
 
     def file_exists(self, file: ImageBase) -> bool:
+        """
+        Валидация успешного сохранения изображения в БД и на диске
+        """
         return file.id is not None and os.path.exists(file.image_path)
 
 
 @bot.message_handler(commands=["start"])
 def send_welcome(message):
+    """
+    Обработка команды /start.
+    Функция отправляет в чат приветственное сообщение, указанное в .env
+    """
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     start_button = types.KeyboardButton("Начать")
     markup.add(start_button)
@@ -71,16 +89,27 @@ def send_welcome(message):
 
 @bot.message_handler(func=lambda message: message.text == "Начать")
 def start_again(message):
+    """
+    Обработка повторного нажатия кнопки Начать
+    """
     bot.send_message(message.chat.id, "Вы уже начали работу с ботом. Загрузите фото")
 
 
 @bot.message_handler(content_types=["text"])
 def echo(message):
+    """
+    Обработка любого текстового сообщения в виде возврата этого сообщения.
+    """
     bot.send_message(message.chat.id, f"Введенный текст: {message.text}")
 
 
 @bot.message_handler(content_types=["photo"])
 def handle_photo(message: Message):
+    """
+    Основная функция работы с изображением, осуществляющая
+    принятие исходного изображения, сохранение измененного
+    и его возврат пользователю с предложением поделиться.
+    """
     user_image = UserImage(message)
 
     image_path = bot.get_file(user_image.id).file_path
@@ -117,6 +146,11 @@ def handle_photo(message: Message):
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("share_"))
 def share_image(call):
+    """
+    Функция обработки нажатия кнопки Поделиться, осуществляющая отправление
+    измененного изображения в указанный канал (если id канала указано в .env),
+    либо в текущий чат.
+    """
     db_id_record = int(call.data.split("_")[-1].strip())
     query = select(ImageBase.image_path).where(ImageBase.id == db_id_record)
     image_path = session.scalar(query)

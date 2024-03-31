@@ -1,4 +1,8 @@
-FROM python:3.11-slim
+FROM python:3.11-slim-buster
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
 # Configure Poetry
 ENV POETRY_VERSION=1.8.2
@@ -15,8 +19,15 @@ RUN python3 -m venv $POETRY_VENV \
 ENV PATH="${PATH}:${POETRY_VENV}/bin"
 
 WORKDIR .
+
+# Install dependencies
+COPY poetry.lock pyproject.toml ./
+RUN poetry install
+RUN poetry add alembic
+
 COPY . .
-RUN pip install poetry==1.8.2
-RUN poetry install --without dev
-RUN poetry add pyTelegramBotAPI
-CMD ["poetry", "run", "python", "main.py"]
+
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
+
