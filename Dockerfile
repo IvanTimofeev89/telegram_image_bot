@@ -35,5 +35,4 @@ WORKDIR /app
 COPY . .
 RUN poetry install --without dev
 # run script
-RUN chmod +x entrypoint.sh
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["bash", "-c", "alembic upgrade head && python main.py"]
