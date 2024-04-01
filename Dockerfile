@@ -33,6 +33,7 @@ RUN python -m venv $VIRTUAL_ENV \
 FROM development as production
 WORKDIR /app
 COPY . .
+RUN mkdir "img"
 RUN poetry install --without dev
 # run script
 ENTRYPOINT ["bash", "-c", "alembic upgrade head && python main.py"]
