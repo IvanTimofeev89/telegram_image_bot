@@ -16,7 +16,7 @@ from models import ImageBase, session
 load_dotenv()
 welcome_phrase = os.getenv("WELCOME_PHRASE")
 token = os.getenv("TOKEN")
-TABLE_NAME = os.getenv("TABLE_NAME")
+
 
 # Инициализация бота
 bot = telebot.TeleBot(token)
